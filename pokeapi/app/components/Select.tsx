@@ -7,43 +7,34 @@ interface Option {
   label: string;
 }
 
-const selectProduct = () => {
-  const [datas, setDatas] = useState();
-  const [selectOption, setSelectOption] = useState<SingleValue<Option>>();
-  const GetApi = async () => {
-    const barang = await fetch("https://pokeapi.co/api/v2/berry/");
-    const value = await barang.json();
-    const result = value.results
-      .map((data: any) => {
-        return {
-          value: data.name,
-          label: data.name,
-        };
-      })
-      .sort((a: Option, b: Option) => a.label.localeCompare(b.label));
-    setDatas(result);
-  };
+const SelectProduct = () => {
+  const [options, setOptions] = useState<Option[]>([]);
+  const [selectedOption, setSelectedOption] =
+    useState<SingleValue<Option>>(null);
 
   useEffect(() => {
-    GetApi();
+    const fetchOptions = async () => {
+      const response = await fetch("https://pokeapi.co/api/v2/berry/");
+      const data = await response.json();
+      const sortedOptions = data.results
+        .map((item: any) => ({ value: item.name, label: item.name }))
+        .sort((a: Option, b: Option) => a.label.localeCompare(b.label));
+      setOptions(sortedOptions);
+    };
+    fetchOptions();
   }, []);
 
   const handleChange = (option: SingleValue<Option>) => {
-    setSelectOption(option);
-    if (option) {
-      console.log(`data : ${JSON.stringify(option)}`);
-    }
+    setSelectedOption(option);
+    console.log(`Selected Option: ${JSON.stringify(option)}`);
   };
 
   return (
     <div>
-      <Select options={datas} onChange={handleChange} />
-      {selectOption && (
-        <div>
-          <p> Selected Options : {selectOption.label}</p>
-        </div>
-      )}
+      <Select options={options} onChange={handleChange} />
+      {selectedOption && <p>Selected Option: {selectedOption.label}</p>}
     </div>
   );
 };
-export default selectProduct;
+
+export default SelectProduct;
